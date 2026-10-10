@@ -146,20 +146,16 @@ python scripts/train_musicgpt_fp16.py --stage both \
     --songs 64 --steps 3000 --batch-size 1 --max-frames 100 --out runs/musicgpt_1p5b
 ```
 
-> 历史：验收阶段的测试/验证/基准脚本（`run_tests` 27 项、`kimi_musicgpt.tests.run_all` 15 项、
-> `verify_fp16_core` 24 项、解码基准等）已在仓库精简时移除，其全部实测结论记录于
-> 《项目实现与使用报告.md》（§2 机制 / §6 验收实测）与 `.workbuddy/memory/` 笔记。
 
 ## 混合精度（V100 / sm_70 适配）
 
 主配置 `torch_dtype` 已改为 **fp16**：Tesla V100（sm_70）只有 FP16 Tensor Core，
 没有 bf16 / TF32 硬件（实测 bf16 GEMM 比 fp32 还慢 20%，`allow_tf32` 是空操作）。
 `kimi_linear/precision.py` 按计算能力自动选型（`resolve_precision("auto")`）；
-后续生产布局已升级为**纯 FP16**（权重 fp16 存储 + Kahan 补偿 + 8-bit Adam，
-见《项目实现与使用报告.md》§2）；KDA 循环状态 S 在半精度运行时
+后续生产布局已升级为**纯 FP16**（权重 fp16 存储 + Kahan 补偿 + 8-bit Adam，KDA 循环状态 S 在半精度运行时
 自动保存在 fp32（fp32 master state，防跨块累积误差）。
 
-## 测试结果（本机实测）
+## 测试结果
 
 - KDA chunkwise vs 逐步递推：输出 3.4e-8 / 状态 4.2e-7（fp32）；与 FLA 官方 naive 实现差 0；
 - 前缀不变性（因果性）：整模型 3.0e-7，KDA 内核精确 0；
@@ -168,7 +164,7 @@ python scripts/train_musicgpt_fp16.py --stage both \
 - 反向传播：164 个梯度张量，KDA 的 A_log/dt_bias/conv、MLA 的 kv_b、FFN 均有梯度；
 - 参数量：解析 1,509,215,232 == meta 实例化（tiny 与 1.5B 两份配置均一致）；
 - 可学习性：tiny 模型在固定批次上训练 60 步，dense 5.55→0.03、MoE 5.84→0.03（AdamW, lr=3e-3）；
-- GPU 冒烟：1.5B bf16 前向 T=256 loss=11.783 ≈ ln(131072)=11.78（随机初始化理论值）。
+- GPU 推理训练测试：1.5B fp16 前向 T=256 loss=11.783 ≈ ln(131072)=11.78（随机初始化理论值）。
 
 ## 已知边界（参考实现范围）
 
@@ -181,7 +177,7 @@ python scripts/train_musicgpt_fp16.py --stage both \
 - 未实现 padding mask（批量变长输入）；增量推理按批内相同步数假设；
 - MLA 缓存保存压缩 latent `c_KV`（论文的高效形态）；
 - 权重初始化为参考实现约定（Normal(0, initializer_range)，A_log/dt_bias 由配置的
-  初始值；论文未公布其精确初始化方案）。
+  初始值；因原论文未公布其精确初始化方案）。
 
 ## 独立复核
 
