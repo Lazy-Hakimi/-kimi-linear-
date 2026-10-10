@@ -1,6 +1,6 @@
-# Kimi Linear — 参考实现（PyTorch）
+# Kimi Linear musicGPT — 实现（PyTorch）
 
-按论文 **《Kimi Linear: An Expressive, Efficient Attention Architecture》**（arXiv:2510.26692）
+模型核心解码部分按论文 **《Kimi Linear: An Expressive, Efficient Attention Architecture》**（arXiv:2510.26692）
 实现的完整模型参考代码。所有超参数集中在**单一配置文档**中，模型代码不含任何硬编码维度。
 
 ## 目录结构
