@@ -1,0 +1,55 @@
+{
+  "model_type": "kimi_music_codec",
+  "comment": "Kimi-Music-Codec tiny local config: 16kHz, 25Hz frame rate (640x downsampling), same full architecture as codec_full_44k.json, scaled channels for on-device trial training",
+
+  "sample_rate": 16000,
+  "channels": 1,
+
+  "init_kernel": 7,
+  "final_kernel": 7,
+  "base_channels": 32,
+  "channel_ratios": [1, 2, 4, 8, 16, 16],
+  "strides": [2, 2, 2, 4, 4, 5],
+  "kernel_size": 7,
+  "residual_kernel_size": 7,
+  "dilations": [1, 3, 9],
+  "latent_dim": 256,
+  "norm": "weight_norm",
+  "activation": "elu",
+
+  "semantic": {
+    "dim": 128,
+    "codebook_size": 2048,
+    "commitment_cost": 0.25
+  },
+  "acoustic": {
+    "n_quantizers": 7,
+    "codebook_size": 2048,
+    "commitment_cost": 0.25,
+    "rvq_dropout_p": 0.5
+  },
+
+  "ema_codebook": false,
+  "dead_code_revival": true,
+  "usage_threshold": 1e-5,
+
+  "loss": {
+    "stft_scales": [1024, 512, 256, 128, 64],
+    "mel_n_fft": 1024,
+    "mel_hop": 256,
+    "mel_n_mels": 64,
+    "w_waveform": 1.0,
+    "w_stft": 1.0,
+    "w_mel": 10.0,
+    "w_commitment": 1.0,
+    "w_adversarial": 1.0,
+    "w_feature_matching": 2.0
+  },
+
+  "discriminator": {
+    "mpd_periods": [2, 3, 5, 7, 11],
+    "mpd_channels": 16,
+    "stft_ffts": [1024, 512, 256],
+    "stft_channels": 16
+  }
+}

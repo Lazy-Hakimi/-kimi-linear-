@@ -1,0 +1,102 @@
+{
+  "model_type": "kimi_musicgpt",
+  "architectures": [
+    "KimiMusicGPT"
+  ],
+  "comment": "Kimi-MusicGPT 1.5B production config (V100-SXM2-16GB). Backbone == configs/kimi_linear_1p5b_dense.json (hidden 2048, 24 layers = [kda,kda,kda,mla] x 6, dense FFN 5760); vocab 2056 = 2048 codebook + 8 special. Train PURE-FP16 (measured): --layout pure_fp16 --optimizer adamw8bit --batch-size 1; <=128 frames keep Kahan (peak 14.91 GiB), 200 frames add --no-kahan (peak 13.21 GiB); raise the effective batch with --accum-steps. KDA chunk_size set to 128 (the measured optimum on the V100: 45.05ms vs 65.96ms per layer fwd+bwd at 64; pure implementation parameter, same math).",
+  "vocab_size": 2056,
+  "tie_word_embeddings": false,
+  "max_position_embeddings": 16384,
+  "hidden_size": 2048,
+  "num_hidden_layers": 24,
+  "layer_pattern": [
+    "kda",
+    "kda",
+    "kda",
+    "mla"
+  ],
+  "layer_pattern_repeat": 6,
+  "rms_norm_eps": 1e-06,
+  "l2norm_eps": 1e-06,
+  "initializer_range": 0.02,
+  "torch_dtype": "float16",
+  "linear_attn": {
+    "num_heads": 16,
+    "head_dim": 128,
+    "value_head_dim": 128,
+    "conv_size": 4,
+    "gate_low_rank": 128,
+    "output_gate_low_rank": 128,
+    "chunk_size": 128,
+    "proj_bias": false,
+    "conv_bias": true,
+    "a_log_init": 0.0,
+    "dt_bias_init": 0.0
+  },
+  "full_attn": {
+    "num_heads": 16,
+    "q_lora_rank": 1024,
+    "kv_lora_rank": 512,
+    "qk_nope_head_dim": 128,
+    "qk_rope_head_dim": 0,
+    "v_head_dim": 128,
+    "rope_theta": 10000.0,
+    "qkv_bias": false,
+    "o_bias": false
+  },
+  "ffn": {
+    "mode": "dense",
+    "hidden_act": "silu",
+    "intermediate_size": 5760,
+    "moe": {
+      "n_routed_experts": 64,
+      "num_experts_per_tok": 6,
+      "n_shared_experts": 1,
+      "moe_intermediate_size": 1408,
+      "routed_scaling_factor": 1.0,
+      "norm_topk_prob": true,
+      "scoring_func": "sigmoid",
+      "first_k_dense_replace": 1,
+      "aux_loss_coeff": 0.0
+    }
+  },
+  "music": {
+    "n_codebooks": 8,
+    "codebook_size": 2048,
+    "n_special": 8,
+    "frame_rate": 25,
+    "io_pattern": "delay",
+    "delays": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "pad_token_id": 2048,
+    "bos_token_id": 2049,
+    "eos_token_id": 2050,
+    "mask_token_id": 2051,
+    "semantic_slot_weight": 2.0,
+    "structure": {
+      "n_section": 8,
+      "n_bar": 128,
+      "n_beat": 16,
+      "n_chord": 144,
+      "n_tempo": 32
+    },
+    "condition": {
+      "text_dim": 2048,
+      "text_layers": 8,
+      "text_heads": 16,
+      "text_max_len": 64,
+      "melody_dim": 2048,
+      "n_styles": 16,
+      "max_prefix_len": 256,
+      "condition_dropout": 0.1
+    }
+  }
+}
