@@ -1,5 +1,5 @@
 # Kimi Linear musicGPT — 实现（PyTorch）
-
+当前项目是大学生个人的学习实践的开发项目
 模型核心解码部分按论文 **《Kimi Linear: An Expressive, Efficient Attention Architecture》**（arXiv:2510.26692）
 实现的完整模型参考代码。所有超参数集中在**单一配置文档**中，模型代码不含任何硬编码维度。
 
@@ -166,7 +166,7 @@ python scripts/train_musicgpt_fp16.py --stage both \
 - 可学习性：tiny 模型在固定批次上训练 60 步，dense 5.55→0.03、MoE 5.84→0.03（AdamW, lr=3e-3）；
 - GPU 推理训练测试：1.5B fp16 前向 T=256 loss=11.783 ≈ ln(131072)=11.78（随机初始化理论值）。
 
-## 已知边界（参考实现范围）
+## 现有瓶颈
 
 - 纯 PyTorch 内核（未用 Triton/FLA CUDA 内核）。KDA chunkwise 已做分块 log 空间
   向量化 + `solve_triangular`（不再有逐列 Python 循环），q/k/v 保持 bf16 存储、
